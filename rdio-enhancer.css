@@ -75,6 +75,16 @@
 .App_Header .user_nav .enhancer_master_menu:hover {
 	opacity:1.0;
 }
+.App_PlayerFooter .add_playlist{
+    width: 50px;
+    height: 50px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAUCAMAAAC+oj0CAAAABGdBTUEAALGPC/xhBQAAAD9QTFRFlJmclJiclJmclJmclJmdlJmclJiclJmclJmclJmclJiclJmclJmclJmclJmclJmcAAAAlJmdlZmdlJiclJmcCxAmtwAAABF0Uk5TmhBwEJkP9O7075n1ynEGywDZOPyuAAAAd0lEQVQY05WO4RKDIAyDcc6pQy2SvP+zruDJUXV3ml/la0jjQhYZKoFuH2rMHTNe4z9uXOJDNhzBlUXFjfTKC51w8+SjgrDuaN3LPH2G6XUI6UQLxVTJ1Z+/pb/BPUCc8ZiR7laD3xtWanArW7I0BmtB8V7mJfwAFT8ct1xKBKUAAAAASUVORK5CYII=);
+    background-size: 15px 15px;
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 29px;
+    left: 95px;
+}
 #enhancer_html {
 	display:none;
 }

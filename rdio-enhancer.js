@@ -606,6 +606,52 @@ function injectedJs() {
 					}
 				}
 
+                console.log(a);
+                if (a== "App.PlayerFooter") {
+                    console.log("A:SLFKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKJF");
+                    console.log(b);
+					b.orig_onRendered = b.onRendered;
+					b.onRendered = function() {
+						b.orig_onRendered.call(this);
+
+                        console.log('HELLO2');
+                        console.log(this.$(".right_controls"));
+						this.$(".right_controls").append('<div><div class="add_playlist createPlaylistFromQueue"></div></div>');
+						this.$(".createPlaylistFromQueue").on("click", function(e) {
+                            console.log("clicked yo");
+
+							R.enhancer.getQueuePlaylist(function(playlist) {
+                                console.log("called back");
+                                console.log(playlist);
+
+                                //for (i = 0; i < R.player.queue._collection.models.length; i++) {
+                                    //console.log(R.player.queue._collection.models[i].attributes.source.attributes.key);
+                                    //var queue_item = R.player.queue._collection.models[i].attributes.source.attributes,
+                                        //tracks = queue_item.tracks.models.map(function(item) { return item.attributes.key;}).join();
+                                    //console.log(tracks);
+                                var queue_list = R.player.queue._collection.models.map(function(item) { return item.attributes.source.attributes;}),
+                                    all_tracklists = queue_list.map(function(item) { return item.tracks.models;}),
+                                    merged = [],
+                                    track_objects = merged.concat.apply(merged, all_tracklists),
+                                    tracks = track_objects.map(function (item) { return item.attributes.key;}).join();
+                                R.Api.request({
+                                    method: "addToPlaylist",
+                                    content: {
+                                        playlist: playlist,
+                                        tracks: tracks
+                                    },
+                                    success: function(success_data) {
+                                        console.log("added to playlist");
+                                    },
+                                    error: function() {
+                                        R.enhancer.show_message('error creating playlist', true);
+                                    }
+                                });
+                            });
+                        });
+                    };
+                }
+
 				return R.Component.orig_create.call(this, a,b,c);
 			};
 		},
@@ -769,6 +815,84 @@ function injectedJs() {
 				'Fetching playlist data... Please wait. If your playlist is long this can take awhile.',
 				'There was an error getting the playlist data, if you have a long playlist try scrolling down to load more first and then try the action again.'
 			);
+		},
+
+		getQueuePlaylist: function(callback) {
+            R.Api.request({
+                method: "getPlaylists",
+                content: {
+                    extras: [{"field": "*", "exclude": true},
+                             {"field": "name"},
+                             {"field": "key"},
+                             {
+                                "field": "tracks",
+                                "extras": [
+                                {"field": "*", "exclude": true},
+                                {"field":"key"},
+                                ]
+                             }
+                             ]
+                },
+                success: function(playlists) {
+                    console.log("got playlists");
+                    var playlist_array = playlists.result.owned.toArray();
+                    for (var i = 0; i < playlist_array.length; i++) {
+                        if (playlist_array[i].attributes.name == "My Queue") {
+                            console.log("found");
+                            var playlist = playlist_array[i].attributes.key,
+                                tracks = playlist_array[i].get("tracks").map(function(item){return item.attributes.key;});
+                            console.log(playlist);
+                            console.log(tracks.join());
+                            console.log(tracks.length);
+                            R.enhancer.clearQueuePlaylist(callback, playlist_array[i].attributes.key, tracks);
+                            return;
+                        }
+                    }
+                    R.enhancer.createQueuePlaylist(callback);
+                },
+                error: function() {
+                    R.enhancer.show_message('error getting playlists', true);
+                }
+            });
+        },
+
+		clearQueuePlaylist: function(callback, playlist, tracks) {
+            R.Api.request({
+                method: "removeFromPlaylist",
+                content: {
+                    playlist: playlist,
+                    index: 0,
+                    count: tracks.length,
+                    tracks: tracks.join()
+                },
+                success: function(result) {
+                    console.log("removed from playlist");
+                    callback(playlist);
+                },
+                error: function() {
+                    R.enhancer.show_message('error getting playlists', true);
+                }
+            });
+        },
+
+		createQueuePlaylist: function(callback) {
+
+            R.Api.request({
+                method: "createPlaylist",
+                content: {
+                    name: "My Queue",
+                    description: "My Current Queue",
+                    tracks: "",
+                    isPublished: false
+                },
+                success: function(playlist) {
+                    console.log("created playlist");
+                    callback(playlist.result.key);
+                },
+                error: function() {
+                    R.enhancer.show_message('error creating playlist', true);
+                }
+            });
 		},
 
 		getFavoriteTracks: function(callback) {
